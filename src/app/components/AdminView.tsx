@@ -1,9 +1,100 @@
 "use client";
-import { LayoutDashboard, DollarSign } from "lucide-react";
+import { useState } from "react";
+import { LayoutDashboard, DollarSign, PlusCircle } from "lucide-react";
 
 export default function AdminView({ granel, setGranel, catalogoConPrecios }: any) {
+  const [newGranelName, setNewGranelName] = useState("");
+  const [newGranelCost, setNewGranelCost] = useState(50000);
+  const [newGranelStockCentral, setNewGranelStockCentral] = useState(10);
+  const [newGranelStockPosadas, setNewGranelStockPosadas] = useState(5);
+
+  const agregarBolsaGranel = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGranelName.trim()) return;
+
+    const newId = `g_${Date.now()}`;
+    const nuevaBolsa = {
+      id: newId,
+      name: newGranelName,
+      cost: Number(newGranelCost),
+      stock: {
+        "Central": Number(newGranelStockCentral),
+        "Posadas": Number(newGranelStockPosadas)
+      }
+    };
+
+    setGranel((prev: any) => [...prev, nuevaBolsa]);
+    setNewGranelName("");
+    setNewGranelCost(50000);
+    setNewGranelStockCentral(10);
+    setNewGranelStockPosadas(5);
+    alert(`✅ Bolsa de granel "${newGranelName}" agregada exitosamente.`);
+  };
+
   return (
     <div className="space-y-8">
+      {/* AGREGAR NUEVA BOLSA A GRANEL */}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+          <h2 className="text-lg font-black text-slate-800 flex items-center gap-2"><PlusCircle size={20} className="text-emerald-600"/> Alta de Materia Prima (Granel)</h2>
+          <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded uppercase tracking-wider">Módulo de Abastecimiento</span>
+        </div>
+        <form onSubmit={agregarBolsaGranel} className="p-6">
+          <p className="text-sm text-slate-500 mb-6">Registra una nueva bolsa o lote de materia prima a granel para integrarla al stock multilocal y habilitar su posterior fraccionamiento.</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Nombre del Insumo / Bolsa</label>
+              <input 
+                type="text" 
+                placeholder="Ej. Bolsa Nueces x 10kg" 
+                value={newGranelName} 
+                onChange={(e) => setNewGranelName(e.target.value)}
+                required
+                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-semibold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Costo Total ($)</label>
+              <input 
+                type="number" 
+                min="1" 
+                value={newGranelCost} 
+                onChange={(e) => setNewGranelCost(Number(e.target.value))}
+                required
+                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Stock Central (kg)</label>
+              <input 
+                type="number" 
+                min="0" 
+                value={newGranelStockCentral} 
+                onChange={(e) => setNewGranelStockCentral(Number(e.target.value))}
+                required
+                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Stock Posadas (kg)</label>
+              <input 
+                type="number" 
+                min="0" 
+                value={newGranelStockPosadas} 
+                onChange={(e) => setNewGranelStockPosadas(Number(e.target.value))}
+                required
+                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-end">
+            <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow-sm cursor-pointer">
+              Registrar Bolsa de Granel
+            </button>
+          </div>
+        </form>
+      </div>
+
       {/* MOTOR DE PRICING */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
@@ -60,17 +151,17 @@ export default function AdminView({ granel, setGranel, catalogoConPrecios }: any
             {granel.map((g: any) => (
               <tr key={g.id} className="bg-orange-50/30">
                 <td className="p-4 font-semibold text-slate-800 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-orange-500"></span> {g.name}</td>
-                <td className="p-4 text-center font-bold border-l border-slate-100 text-slate-700">{g.stock["Central"]} kg</td>
-                <td className="p-4 text-center font-bold border-l border-slate-100 text-slate-700">{g.stock["Posadas"]} kg</td>
-                <td className="p-4 text-right font-black text-orange-600">{g.stock["Central"] + g.stock["Posadas"]} kg</td>
+                <td className="p-4 text-center font-bold border-l border-slate-100 text-slate-700">{g.stock?.["Central"] || 0} kg</td>
+                <td className="p-4 text-center font-bold border-l border-slate-100 text-slate-700">{g.stock?.["Posadas"] || 0} kg</td>
+                <td className="p-4 text-right font-black text-orange-600">{(g.stock?.["Central"] || 0) + (g.stock?.["Posadas"] || 0)} kg</td>
               </tr>
             ))}
             {catalogoConPrecios.map((f: any) => (
               <tr key={f.id} className="hover:bg-slate-50">
                 <td className="p-4 font-medium text-slate-700 flex items-center gap-2 pl-8"><span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span> {f.name}</td>
-                <td className="p-4 text-center font-semibold border-l border-slate-100">{f.stock["Central"]} un.</td>
-                <td className="p-4 text-center font-semibold border-l border-slate-100">{f.stock["Posadas"]} un.</td>
-                <td className="p-4 text-right font-bold text-blue-600">{f.stock["Central"] + f.stock["Posadas"]} un.</td>
+                <td className="p-4 text-center font-semibold border-l border-slate-100">{f.stock?.["Central"] || 0} un.</td>
+                <td className="p-4 text-center font-semibold border-l border-slate-100">{f.stock?.["Posadas"] || 0} un.</td>
+                <td className="p-4 text-right font-bold text-blue-600">{(f.stock?.["Central"] || 0) + (f.stock?.["Posadas"] || 0)} un.</td>
               </tr>
             ))}
           </tbody>
