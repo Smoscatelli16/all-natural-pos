@@ -1,113 +1,115 @@
 "use client";
 import { useState } from "react";
-import { LayoutDashboard, DollarSign, PlusCircle } from "lucide-react";
+import { LayoutDashboard, DollarSign, PackagePlus, Trash2 } from "lucide-react";
 
 export default function AdminView({ granel, setGranel, catalogoConPrecios }: any) {
-  const [newGranelName, setNewGranelName] = useState("");
-  const [newGranelCost, setNewGranelCost] = useState(50000);
-  const [newGranelStockCentral, setNewGranelStockCentral] = useState(10);
-  const [newGranelStockPosadas, setNewGranelStockPosadas] = useState(5);
+  const [selectedGranelId, setSelectedGranelId] = useState(granel[0]?.id || "");
+  const [targetBranch, setTargetBranch] = useState("Central");
+  const [kilosASumar, setKilosASumar] = useState(20);
 
-  const agregarBolsaGranel = (e: React.FormEvent) => {
+  const reabastecerGranel = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGranelName.trim()) return;
+    if (!selectedGranelId) return;
 
-    const newId = `g_${Date.now()}`;
-    const nuevaBolsa = {
-      id: newId,
-      name: newGranelName,
-      cost: Number(newGranelCost),
-      stock: {
-        "Central": Number(newGranelStockCentral),
-        "Posadas": Number(newGranelStockPosadas)
+    setGranel((prev: any) => prev.map((item: any) => {
+      if (item.id === selectedGranelId) {
+        const stockActualSucursal = item.stock[targetBranch] || 0;
+        return {
+          ...item,
+          stock: {
+            ...item.stock,
+            [targetBranch]: stockActualSucursal + Number(kilosASumar)
+          }
+        };
       }
-    };
+      return item;
+    }));
 
-    setGranel((prev: any) => [...prev, nuevaBolsa]);
-    setNewGranelName("");
-    setNewGranelCost(50000);
-    setNewGranelStockCentral(10);
-    setNewGranelStockPosadas(5);
-    alert(`✅ Bolsa de granel "${newGranelName}" agregada exitosamente.`);
+    alert(`✅ Stock reabastecido con éxito: +${kilosASumar} kg agregados en ${targetBranch === 'Central' ? 'Depósito Central' : 'Sucursal Posadas 1'}.`);
+  };
+
+  const eliminarGranel = (id: string, name: string) => {
+    if (confirm(`¿Estás seguro de eliminar "${name}" del inventario de granel?`)) {
+      setGranel((prev: any) => prev.filter((item: any) => item.id !== id));
+    }
   };
 
   return (
     <div className="space-y-8">
-      {/* AGREGAR NUEVA BOLSA A GRANEL */}
+      {/* REABASTECIMIENTO DE MATERIA PRIMA (GRANEL) */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-          <h2 className="text-lg font-black text-slate-800 flex items-center gap-2"><PlusCircle size={20} className="text-emerald-600"/> Alta de Materia Prima (Granel)</h2>
-          <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded uppercase tracking-wider">Módulo de Abastecimiento</span>
+          <h2 className="text-lg font-black text-slate-800 flex items-center gap-2"><PackagePlus size={20} className="text-emerald-600"/> Reabastecimiento de Materia Prima (Granel)</h2>
+          <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded uppercase tracking-wider">Gestión de Stock</span>
         </div>
-        <form onSubmit={agregarBolsaGranel} className="p-6">
-          <p className="text-sm text-slate-500 mb-6">Registra una nueva bolsa o lote de materia prima a granel para integrarla al stock multilocal y habilitar su posterior fraccionamiento.</p>
+        <form onSubmit={reabastecerGranel} className="p-6">
+          <p className="text-sm text-slate-500 mb-6">Selecciona una bolsa de granel existente y suma stock físico a la ubicación correspondiente para reflejar la llegada de nuevos lotes.</p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Nombre del Insumo / Bolsa</label>
-              <input 
-                type="text" 
-                placeholder="Ej. Bolsa Nueces x 10kg" 
-                value={newGranelName} 
-                onChange={(e) => setNewGranelName(e.target.value)}
-                required
-                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-semibold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
-              />
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Insumo a Reabastecer</label>
+              <select 
+                value={selectedGranelId} 
+                onChange={(e) => setSelectedGranelId(e.target.value)}
+                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-semibold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50 cursor-pointer"
+              >
+                {granel.map((g: any) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Costo Total ($)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Sucursal / Depósito</label>
+              <select 
+                value={targetBranch} 
+                onChange={(e) => setTargetBranch(e.target.value)}
+                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-semibold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50 cursor-pointer"
+              >
+                <option value="Central">Depósito Central</option>
+                <option value="Posadas">Sucursal Posadas 1</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Kilos a Sumar (kg)</label>
               <input 
                 type="number" 
                 min="1" 
-                value={newGranelCost} 
-                onChange={(e) => setNewGranelCost(Number(e.target.value))}
+                value={kilosASumar} 
+                onChange={(e) => setKilosASumar(Number(e.target.value))}
                 required
                 className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Stock Central (kg)</label>
-              <input 
-                type="number" 
-                min="0" 
-                value={newGranelStockCentral} 
-                onChange={(e) => setNewGranelStockCentral(Number(e.target.value))}
-                required
-                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
-              />
+              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors shadow-sm cursor-pointer">
+                Sumar Stock
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Stock Posadas (kg)</label>
-              <input 
-                type="number" 
-                min="0" 
-                value={newGranelStockPosadas} 
-                onChange={(e) => setNewGranelStockPosadas(Number(e.target.value))}
-                required
-                className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 bg-slate-50"
-              />
-            </div>
-          </div>
-          <div className="mt-6 flex justify-end">
-            <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow-sm cursor-pointer">
-              Registrar Bolsa de Granel
-            </button>
           </div>
         </form>
       </div>
 
-      {/* MOTOR DE PRICING */}
+      {/* MOTOR DE PRICING Y ELIMINACIÓN DE INSUMOS */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-          <h2 className="text-lg font-black text-slate-800 flex items-center gap-2"><DollarSign size={20} className="text-purple-600"/> Motor de Pricing Dinámico</h2>
+          <h2 className="text-lg font-black text-slate-800 flex items-center gap-2"><DollarSign size={20} className="text-purple-600"/> Motor de Pricing Dinámico & Catálogo</h2>
           <span className="text-xs font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded uppercase tracking-wider">Edición de Costos Habilitada</span>
         </div>
         <div className="p-6">
-          <p className="text-sm text-slate-500 mb-6">Si modificas el costo de compra de la materia prima, los precios de venta de todas sus fracciones derivadas se actualizarán automáticamente manteniendo tu margen de ganancia.</p>
+          <p className="text-sm text-slate-500 mb-6">Si modificas el costo de compra de la materia prima, los precios de venta de todas sus fracciones derivadas se actualizarán automáticamente manteniendo tu margen de ganancia. También puedes eliminar ítems erróneos.</p>
           <div className="grid gap-6">
             {granel.map((g: any) => (
               <div key={g.id} className="border-2 border-slate-100 rounded-lg p-5">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-slate-800">{g.name}</h3>
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-bold text-slate-800">{g.name}</h3>
+                    <button 
+                      onClick={() => eliminarGranel(g.id, g.name)}
+                      className="text-red-500 hover:text-red-700 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold"
+                      title="Eliminar insumo"
+                    >
+                      <Trash2 size={14} /> Eliminar
+                    </button>
+                  </div>
                   <div className="flex items-center gap-3">
                     <label className="text-sm font-semibold text-slate-600">Costo de compra:</label>
                     <div className="relative">
