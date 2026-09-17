@@ -33,11 +33,12 @@ export default function PosView({ catalogoConPrecios, currentBranch, isOnline, s
   };
 
   return (
-    <div className="flex gap-8">
-      <div className="flex-1">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold text-slate-800">Terminal: {currentBranch}</h2>
+    <div className="flex flex-col lg:flex-row gap-8">
+      {/* SECCIÓN DEL CATÁLOGO */}
+      <div className="flex-1 w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Terminal: {currentBranch}</h2>
             <button 
               onClick={() => setIsWholesale(!isWholesale)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors border ${isWholesale ? 'bg-purple-600 text-white border-purple-700 shadow-sm' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'}`}
@@ -48,7 +49,7 @@ export default function PosView({ catalogoConPrecios, currentBranch, isOnline, s
           {!isOnline && <span className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm font-bold flex items-center gap-2"><WifiOff size={14}/> Red Local</span>}
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {catalogoConPrecios.map((product: any) => {
             const localStock = product.stock[currentBranch];
             const displayPrice = isWholesale ? product.wholesalePrice : product.finalPrice;
@@ -69,11 +70,12 @@ export default function PosView({ catalogoConPrecios, currentBranch, isOnline, s
         </div>
       </div>
 
-      <div className="w-96 bg-slate-50 rounded-xl p-6 border border-slate-200 shadow-inner flex flex-col">
+      {/* SECCIÓN DEL TICKET DE VENTA */}
+      <div className="w-full lg:w-96 bg-slate-50 rounded-xl p-6 border border-slate-200 shadow-inner flex flex-col">
         <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><ShoppingCart size={20}/> Ticket de Venta</h2>
-        <div className="flex-1 overflow-y-auto min-h-[250px]">
+        <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[300px] lg:max-h-none">
           {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+            <div className="h-full py-10 flex flex-col items-center justify-center text-gray-400 gap-2">
               <ShoppingCart size={32} className="opacity-20" />
               <p className="text-sm font-medium">Escanee un producto</p>
             </div>
